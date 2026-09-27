@@ -1,15 +1,17 @@
 "use client"
 
 import { useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { supabase } from '../utils/supabase'
 
 export default function AuthPage() {
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
   const [message, setMessage] = useState('')
+  const router = useRouter()
 
   const handleSignup = async () => {
-    const { data, error } = await supabase
+    const { error } = await supabase
       .from('users')
       .insert([{ username, password }])
 
@@ -29,21 +31,24 @@ export default function AuthPage() {
       .single()
 
     if (error || !data) {
-      setMessage('Login failed: Invalid username or password.')
+      setMessage('Login failed: Invalid app username or password.')
     } else {
-      setMessage(`Welcome back, ${data.username}!`)
-      // Later, we will redirect to the dashboard here
+      // Save the logged-in user to local storage for the dashboard to read
+      localStorage.setItem('loggedInUser', data.username)
+      setMessage(`Welcome back, ${data.username}! Redirecting...`)
+      router.push('/dashboard')
     }
   }
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-900 text-white p-4">
       <div className="w-full max-w-md bg-gray-800 rounded-lg shadow-md p-8">
-        <h1 className="text-2xl font-bold text-center mb-6">Phase 2: Authentication</h1>
+        <h1 className="text-2xl font-bold text-center mb-6">App Login</h1>
+        <p className="text-sm text-gray-400 text-center mb-6">Create an account for Better Google Calendar</p>
         
         <div className="space-y-4">
           <div>
-            <label className="block text-sm font-medium mb-1">Username</label>
+            <label className="block text-sm font-medium mb-1">App Username</label>
             <input
               type="text"
               className="w-full p-2 rounded bg-gray-700 border border-gray-600 focus:outline-none focus:border-blue-500"
@@ -53,7 +58,7 @@ export default function AuthPage() {
           </div>
           
           <div>
-            <label className="block text-sm font-medium mb-1">Password (Plain Text)</label>
+            <label className="block text-sm font-medium mb-1">App Password</label>
             <input
               type="password"
               className="w-full p-2 rounded bg-gray-700 border border-gray-600 focus:outline-none focus:border-blue-500"
